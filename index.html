@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Message Wall</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 1em;
+            background-color: #fff;
+        }
+
+        #message-wall p {
+            margin: 0;
+            padding: 0.5em 1em;
+        }
+
+        /* Zebra stripes: every other row is light grey */
+        #message-wall p:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Optional subtle separation */
+        #message-wall p {
+            border-bottom: 1px solid transparent;
+        }
+
+        /* Optional: make message text slightly indented */
+        #message-wall p strong {
+            display: inline-block;
+            width: 120px; /* adjust width for names */
+        }
+    </style>
+</head>
+<body>
+    <div id="message-wall"></div>
+
+    <script>
+        // Published CSV URL of your "_" worksheet
+        const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRffN38qWwALYooM6y1vqCD8Tkse6reunTc_YfaNyEzoZpzSQyKuwv8c_ZOm6xgQDm3Cy36pwM7pvbc/pub?output=csv";
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch(sheetURL);
+                const text = await response.text();
+
+                // Split rows, skip the header row
+                const rows = text.split("\n").slice(1);
+                
+                const messages = rows.map(row => {
+                    const cols = row.split(",");
+                    const name = cols[0];       // Name column
+                    const message = cols[1];    // Message column
+                    // Ignore Submission ID or any extra columns
+                    return `<p><strong>${name}</strong>: ${message}</p>`;
+                });
+
+                document.getElementById("message-wall").innerHTML = messages.join("");
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+            }
+        }
+
+        // Initial fetch and periodic refresh every 5 seconds
+        fetchMessages();
+        setInterval(fetchMessages, 5000);
+    </script>
+</body>
+</html>
